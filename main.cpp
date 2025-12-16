@@ -1,135 +1,184 @@
+#include <iomanip>
 #include <iostream>
 #include <string>
-#include <iomanip>
-#include <vector>
+
+void setupOutputFormatting() {
+  std::cout << std::fixed << std::setprecision(2);
+}
 
 class Employee {
 private:
-    std::string employeeName;
-    std::string employeeNumber; 
-    std::string hireDate;
-
-protected:
-    double hourlyPayRate;
+  std::string name;
+  std::string employeeNumber; 
+  std::string hireDate;
 
 public:
-    
-    Employee(std::string name, std::string number, std::string date, double rate)
-        : employeeName(name), employeeNumber(number), hireDate(date), hourlyPayRate(rate) {
-        if (employeeNumber.length() != 5 || employeeNumber[3] != '-') {
-            std::cerr << "Warning: Employee number format should be XXX-L.\n";
-        }
-    }
+ 
+  Employee(const std::string &n, const std::string &num,
+           const std::string &date)
+      : name(n), employeeNumber(num), hireDate(date) {
+   
+  }
 
-    virtual ~Employee() {}
+ 
+  std::string getName() const { return name; }
 
-    std::string getName() const { return employeeName; }
-    std::string getNumber() const { return employeeNumber; }
-    std::string getHireDate() const { return hireDate; }
-    double getHourlyPayRate() const { return hourlyPayRate; }
+ 
+  std::string getEmployeeNumber() const { return employeeNumber; }
 
-    
-    void setName(const std::string& name) { employeeName = name; }
-    void setNumber(const std::string& number) { employeeNumber = number; }
-    void setHireDate(const std::string& date) { hireDate = date; }
-    void setHourlyPayRate(double rate) { hourlyPayRate = rate; }
-    virtual double calculateGrossPay(double hoursWorked) const {
-        return hoursWorked * hourlyPayRate;
-    }
+  std::string getHireDate() const { return hireDate; }
+
+ 
+  void setName(const std::string &newName) { name = newName; }
+
+  void setEmployeeNumber(const std::string &newNum) { employeeNumber = newNum; }
+
+ 
+  void setHireDate(const std::string &newDate) { hireDate = newDate; }
+
+  void printEmployee() const {
+    std::cout << "  Name: " << name << "\n";
+    std::cout << "  Employee Number: " << employeeNumber << "\n";
+    std::cout << "  Hire Date: " << hireDate << "\n";
+  }
 };
 
-class TeamLeader : public Employee {
+class ProductionWorker : public Employee {
 private:
-    double monthlyBonus;
-    int requiredTrainingHours;
-    int trainingHoursAttended;
+  int shift; 
+  double hourlyPayRate;
 
 public:
+  
+  ProductionWorker(const std::string &n, const std::string &num,
+                   const std::string &date, int s, double rate)
+      : Employee(n, num, date), shift(s), hourlyPayRate(rate) {
    
-    TeamLeader(std::string name, std::string number, std::string date, double rate,
-               double bonus, int requiredHours, int attendedHours)
-        : Employee(name, number, date, rate),
-          monthlyBonus(bonus),
-          requiredTrainingHours(requiredHours),
-          trainingHoursAttended(attendedHours) {}
+  }
+ 
+  int getShift() const { return shift; }
 
-   
-    double getMonthlyBonus() const { return monthlyBonus; }
-    int getRequiredTrainingHours() const { return requiredTrainingHours; }
-    int getTrainingHoursAttended() const { return trainingHoursAttended; }
+  double getHourlyPayRate() const { return hourlyPayRate; }
 
-   
-    void setMonthlyBonus(double bonus) { monthlyBonus = bonus; }
-    void setRequiredTrainingHours(int hours) { requiredTrainingHours = hours; }
-    void setTrainingHoursAttended(int hours) { trainingHoursAttended = hours; }
+  void setShift(int newShift) { shift = newShift; }
 
-    
-    bool hasCompletedTraining() const {
-        return trainingHoursAttended >= requiredTrainingHours;
-    }
+  void setHourlyPayRate(double newRate) { hourlyPayRate = newRate; }
 
-   
-    double calculateGrossPay(double hoursWorked) const override {
-        double basePay = hoursWorked * hourlyPayRate;
-
-        if (hasCompletedTraining()) {
-            std::cout << "  (Training requirement met. Monthly bonus included.)\n";
-            return basePay + monthlyBonus;
-        } else {
-            std::cout << "  (Training requirement NOT met. Monthly bonus excluded.)\n";
-            return basePay;
-        }
-    }
+  void printProductionWorker() const {
+    Employee::printEmployee(); 
+    std::cout << "  Shift: " << (shift == 1 ? "Day" : "Night") << "\n";
+    std::cout << "  Hourly Pay Rate: $" << hourlyPayRate << "\n";
+  }
 };
 
-void displayEmployeeDetails(const Employee& emp, double hours) {
-    std::cout << std::fixed << std::setprecision(2);
+class ShiftSupervisor : public Employee {
+private:
+  double annualSalary;
+  double annualProductionBonus;
 
-    std::cout << "\n----------------------------------------\n";
-    std::cout << "Employee Type: " << (dynamic_cast<const TeamLeader*>(&emp) ? "Team Leader" : "Standard Worker") << "\n";
-    std::cout << "Name: " << emp.getName() << "\n";
-    std::cout << "Number: " << emp.getNumber() << "\n";
-    std::cout << "Hire Date: " << emp.getHireDate() << "\n";
-    std::cout << "Hourly Rate: $" << emp.getHourlyPayRate() << "\n";
+public:
+  
+  ShiftSupervisor(const std::string &n, const std::string &num,
+                  const std::string &date, double salary, double bonus)
+      : Employee(n, num, date), annualSalary(salary),
+        annualProductionBonus(bonus) {
+   
+  }
 
-    const TeamLeader* leader = dynamic_cast<const TeamLeader*>(&emp);
-    if (leader) {
-        std::cout << "Monthly Bonus: $" << leader->getMonthlyBonus() << "\n";
-        std::cout << "Req. Training: " << leader->getRequiredTrainingHours() << " hrs\n";
-        std::cout << "Attended: " << leader->getTrainingHoursAttended() << " hrs\n";
-        std::cout << "Training Status: " << (leader->hasCompletedTraining() ? "COMPLETE" : "PENDING") << "\n";
-    }
+  double getAnnualSalary() const { return annualSalary; }
 
-    std::cout << "----------------------------------------\n";
-    std::cout << "Hours Worked: " << hours << " hrs\n";
-    double grossPay = emp.calculateGrossPay(hours);
-    std::cout << "GROSS PAY: $" << grossPay << "\n";
-    std::cout << "----------------------------------------\n";
-}
+  double getAnnualProductionBonus() const { return annualProductionBonus; }
+
+  void setAnnualSalary(double newSalary) { annualSalary = newSalary; }
+
+  void setAnnualProductionBonus(double newBonus) {
+    annualProductionBonus = newBonus;
+  }
+
+  void printShiftSupervisor() const {
+    Employee::printEmployee();
+    std::cout << "  Annual Salary: $" << annualSalary << "\n";
+    std::cout << "  Annual Production Bonus: $" << annualProductionBonus
+              << "\n";
+  }
+};
+
+class TeamLeader : public ProductionWorker {
+private:
+  double monthlyBonus;
+  int requiredTrainingHours;
+  int attendedTrainingHours;
+
+public:
+  
+  TeamLeader(const std::string &n, const std::string &num,
+             const std::string &date, int s, double rate, double bonus,
+             int required, int attended)
+      
+      : ProductionWorker(n, num, date, s, rate), monthlyBonus(bonus),
+        requiredTrainingHours(required), attendedTrainingHours(attended) {
+    
+  }
+
+  double getMonthlyBonus() const { return monthlyBonus; }
+
+  int getRequiredTrainingHours() const { return requiredTrainingHours; }
+
+  int getAttendedTrainingHours() const { return attendedTrainingHours; }
+
+  void setMonthlyBonus(double newBonus) { monthlyBonus = newBonus; }
+
+  void setRequiredTrainingHours(int newRequired) {
+    requiredTrainingHours = newRequired;
+  }
+
+  
+  void setAttendedTrainingHours(int newAttended) {
+    attendedTrainingHours = newAttended;
+  }
+
+  void printTeamLeader() const {
+   
+    ProductionWorker::printProductionWorker();
+    std::cout << "  Monthly Bonus: $" << monthlyBonus << "\n";
+    std::cout << "  Required Training Hours: " << requiredTrainingHours
+              << " hrs\n";
+    std::cout << "  Attended Training Hours: " << attendedTrainingHours
+              << " hrs\n";
+  }
+};
 
 int main() {
-    
-    Employee worker("Alice Johnson", "123-A", "2022-08-15", 18.50);
-    double workerHours = 40.0;
+  setupOutputFormatting();
+  std::cout << "FACTORY WORKER MANAGEMENT SYSTEM\n";
+  std::cout << "================================\n\n";
 
-    
-    TeamLeader leader1("Bob Smith", "456-T", "2021-03-20", 25.00, 500.00, 10, 12);
-    double leader1Hours = 40.0;
+  std::cout << "--- PRODUCTION WORKERS ---\n";
 
-   
-    TeamLeader leader2("Charlie Davis", "789-L", "2023-11-01", 26.00, 500.00, 10, 8);
-    double leader2Hours = 45.0; 
-  
-    std::cout << "--- Factory Employee Payroll Simulation ---\n";
+  ProductionWorker pw1("Alice Smith", "1001", "2020-05-20", 1, 15.50);
+  std::cout << "Worker 1 (Day Shift):\n";
+  pw1.printProductionWorker();
 
-    displayEmployeeDetails(worker, workerHours);
-    displayEmployeeDetails(leader1, leader1Hours);
-    displayEmployeeDetails(leader2, leader2Hours);
+  std::cout << "\n";
 
-    
-    std::cout << "\n--- DEMO: Changing Pay Rate for Alice ---\n";
-    worker.setHourlyPayRate(20.00);
-    displayEmployeeDetails(worker, workerHours);
+  ProductionWorker pw2("Bob Johnson", "2002", "2019-11-01", 2, 18.75);
+  std::cout << "Worker 2 (Night Shift):\n";
+  pw2.printProductionWorker();
 
-    return 0;
+  std::cout << "\n--- SHIFT SUPERVISOR ---\n";
+
+  ShiftSupervisor ss1("Carol Davis", "3003", "2018-03-10", 65000.00, 5000.00);
+  std::cout << "Supervisor 1:\n";
+  ss1.printShiftSupervisor();
+
+  std::cout << "\n--- TEAM LEADER ---\n";
+
+  TeamLeader tl1("David Lee", "4004", "2021-08-25", 1, 22.00, 250.00, 40, 35);
+  std::cout << "Team Leader 1:\n";
+  tl1.printTeamLeader();
+
+  std::cout << "\n================================\n";
+  std::cout << "Program Execution Complete.\n";
+
+  return 0;
 }
