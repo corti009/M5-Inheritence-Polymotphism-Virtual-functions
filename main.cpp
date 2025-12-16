@@ -1,161 +1,128 @@
-#include <iostream>
+#include <algorithm>
 #include <cmath>
 #include <iomanip>
-#include <vector>
+#include <iostream>
 #include <string>
+#include <vector>
 
-class Shape {
-public:
-   
-    virtual double calculateArea() const = 0;
+static constexpr double PI = 3.14159265358979323846;
 
-    virtual double calculatePerimeter() const = 0;
-
-    virtual ~Shape() = default;
-
-    virtual std::string getName() const = 0;
-};
-
-class Circle : public Shape {
+class BasicShape {
 private:
-    double radius;
+  double area;
+  std::string name;
 
 public:
   
-    Circle(double r) : radius(r) {}
-    double getRadius() const { return radius; }
-    void setRadius(double r) { radius = r; }
-    double calculateArea() const override {
-        return M_PI * radius * radius;
-    }
+  virtual void calcArea() = 0; 
 
-    double calculatePerimeter() const override {
-        return 2 * M_PI * radius;
-    }
+  void setName(const std::string &n) { name = n; }
 
-    std::string getName() const override {
-        return "Circle";
-    }
+  void setArea(double a) { area = a; }
+
+  std::string getName() const { return name; }
+
+  double getArea() const { return area; }
+
+  virtual ~BasicShape() {}
 };
 
-
-class Rectangle : public Shape {
+class Circle : public BasicShape {
 private:
-    double length;
-    double width;
+  double xCenter, yCenter, radius;
 
 public:
-    
-    Rectangle(double l, double w) : length(l), width(w) {}
-    double getLength() const { return length; }
-    double getWidth() const { return width; }
-    void setLength(double l) { length = l; }
-    void setWidth(double w) { width = w; }
-    double calculateArea() const override {
-        return length * width;
-    }
+  
+  Circle(double x, double y, double r, const std::string &n = "Circle")
+      : xCenter(x), yCenter(y), radius(r) {
+    setName(n);
+    calcArea(); 
+  }
 
-    double calculatePerimeter() const override {
-        return 2 * (length + width);
-    }
+  void calcArea() override {
+    double calculatedArea = PI * radius * radius;
+    setArea(calculatedArea);
+  }
 
-    std::string getName() const override {
-        return "Rectangle";
-    }
+  double getXCenter() const { return xCenter; }
+  double getYCenter() const { return yCenter; }
+  double getRadius() const { return radius; }
 };
 
-class Triangle : public Shape {
-private:
-    
-    double base;
-    double height;
-    double sideA;
-    double sideB;
-    double sideC;
+class Rectangle : public BasicShape {
+protected:
+  double length;
+  double width;
 
 public:
-    
-    Triangle(double b, double h, double a, double c) 
-        : base(b), height(h), sideA(a), sideB(b), sideC(c) 
-    {}
+ 
+  Rectangle(double l, double w, const std::string &n = "Rectangle")
+      : length(l), width(w) {
+    setName(n); 
+    calcArea(); 
+  }
 
-    Triangle(double b, double h, double a, double c, double d)
-        : base(b), height(h), sideA(c), sideB(d), sideC(a) 
-    {}
+  void calcArea() override {
+    double calculatedArea = length * width;
+    setArea(calculatedArea); 
+  }
 
-Triangle(double side1, double side2, double side3)
-    : base(side1), height(0.0), sideA(side1), sideB(side2), sideC(side3)
-{}
-
-  
-    double getBase() const { return base; }
-    double getHeight() const { return height; }
-    double getSideA() const { return sideA; }
-    double getSideB() const { return sideB; }
-    double getSideC() const { return sideC; }
-    double calculateArea() const override {
-        return 0.5 * base * height;
-    }
-
-    double calculatePerimeter() const override {
-
-        return sideA + sideB + sideC;
-    }
-
-    std::string getName() const override {
-        return "Triangle";
-    }
+  double getLength() const { return length; }
+  double getWidth() const { return width; }
 };
 
-void displayShapeInfo(const Shape* shape) {
-    if (!shape) return;
-  
-    std::cout << std::fixed << std::setprecision(2);
+class Square : public Rectangle {
+private:
+  double side;
 
-    std::cout << "\n--- " << shape->getName() << " Calculations ---\n";
+public:
+ 
+  Square(double s, const std::string &n = "Square")
+      
+      : Rectangle(s, s, n), side(s) {
+  }
 
-    if (auto circle = dynamic_cast<const Circle*>(shape)) {
-        std::cout << "  Radius: " << circle->getRadius() << "\n";
-    } 
-   
-    else if (auto rect = dynamic_cast<const Rectangle*>(shape)) {
-        std::cout << "  Length: " << rect->getLength() << "\n";
-        std::cout << "  Width: " << rect->getWidth() << "\n";
-    }
-    
-    else if (auto tri = dynamic_cast<const Triangle*>(shape)) {
-        std::cout << "  Sides: " << tri->getSideA() << ", " << tri->getSideB() << ", " << tri->getSideC() << "\n";
-        std::cout << "  (Used Base: " << tri->getBase() << ", Height: " << tri->getHeight() << " for Area)\n";
-    }
+  double getSide() const { return side; }
+};
 
-    std::cout << "  Area: " << shape->calculateArea() << "\n";
-    std::cout << "  Perimeter: " << shape->calculatePerimeter() << "\n";
-    std::cout << "------------------------------------------\n";
-}
 
 int main() {
-    std::cout << "--- Basic Geometric Shapes Polymorphism Demonstration ---\n";
+  
+  std::cout << std::fixed << std::setprecision(2);
 
-    Shape* myCircle = new Circle(5.0);
+  std::vector<BasicShape *> shapeArray;
 
-    Shape* myRectangle = new Rectangle(10.0, 6.0);
+  shapeArray.push_back(new Rectangle(10.0, 5.0, "Large Rectangle"));
+  shapeArray.push_back(new Rectangle(4.5, 8.0, "Skinny Rectangle"));
 
-    Shape* myTriangle = new Triangle(3.0, 4.0, 4.0, 5.0);
+  shapeArray.push_back(new Circle(0.0, 0.0, 3.0, "Unit Circle"));
+  shapeArray.push_back(new Circle(5.0, 5.0, 7.5, "Big Circle"));
 
-    std::vector<Shape*> shapes;
-    shapes.push_back(myCircle);
-    shapes.push_back(myRectangle);
-    shapes.push_back(myTriangle);
+  shapeArray.push_back(new Square(6.0, "Six-by-Six Square"));
 
-    for (const auto& shape : shapes) {
-        displayShapeInfo(shape);
-    }
+  std::cout << "--- Basic Shapes Polymorphic Calculator ---\n";
+  std::cout << "-------------------------------------------\n\n";
 
-    for (const auto& shape : shapes) {
-        delete shape;
-    }
+  std::cout << "Processing " << shapeArray.size() << " shapes:\n\n";
 
-    std::cout << "\nDemonstration complete. Memory cleaned up.\n";
+  for (size_t i = 0; i < shapeArray.size(); ++i) {
+    BasicShape *shapePtr = shapeArray[i];
 
-    return 0;
+    shapePtr->calcArea();
+
+    std::cout << "Shape #" << i + 1 << ":\n";
+    std::cout << "  Type: " << shapePtr->getName() << "\n";
+    std::cout << "  Area: " << shapePtr->getArea() << "\n";
+    std::cout << (i < shapeArray.size() - 1 ? "--------------------------\n"
+                                            : "");
+  }
+
+  std::cout << "\n-------------------------------------------\n";
+  std::cout << "Cleaning up memory...\n";
+  for (BasicShape *shapePtr : shapeArray) {
+    delete shapePtr;
+  }
+  std::cout << "Cleanup complete. Program finished.\n";
+
+  return 0;
 }
